@@ -5,14 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.BitSet;
-
-import javax.swing.UIDefaults.LazyInputMap;
 
 public class modeCFB {
 	/*Path to open File*/
 	final static String mainPath = "/media/daniar/myPassport/WorkPlace/Windows/NewAlgorithmKripto/file/";
+	/*Initialization Vector*/
+	String IV = "";
 	
 	/*Key with minimum 8 Byte length or 8 characters*
 	 * 1 character = 8 bit = 1 Byte*/	
@@ -28,7 +29,7 @@ public class modeCFB {
 	/*Constructor of modeCFB*/
 	public modeCFB(){
 		/*initialization*/
-		key = new String();
+		key = new String("abcdefghijklmnopqrst123456789012");
 		this.plainText = new ArrayList<Integer>();
 		this.chiperText = new ArrayList<Integer>();
 		this.resultText = new ArrayList<Integer>();
@@ -47,7 +48,7 @@ public class modeCFB {
 			cfb.plainText = readFile(mainPath+"PlainText.txt");
 			
 			/*Start the CFB mode*/
-			cfb.chiperText = cfb.blockE(cfb.plainText);
+			cfb.chiperText = cfb.startEncryptionModeCFB(cfb.plainText);
 			
 			/*Write chiper text to ChiperText.txt*/
 			writeFile(cfb.chiperText, mainPath+"ChiperText.txt");
@@ -59,51 +60,94 @@ public class modeCFB {
 			cfb.chiperText = readFile(mainPath+"ChiperText.txt");
 			
 			/*Start the CFB mode*/
-			cfb.resultText = cfb.blockD(cfb.chiperText);
+			cfb.resultText = cfb.startDecryptionModeCFB(cfb.chiperText);
 			
 			/*Write result text to ResultText.txt*/
 			writeFile(cfb.resultText, mainPath+"ResultText.txt");
+			
+		System.out.println("Success");
 		
 	} 
 	
+	/*Start the encryption mode CFB*/
 	public ArrayList<Integer> startEncryptionModeCFB(ArrayList<Integer> plainText){
 		ArrayList<Integer> result = new ArrayList<Integer>();
 		for (int i = 0 ; i < plainText.size() ; i ++){
-			result.addAll(blockE(plainText));
+			
+			/*adjust the size of block to be sent for encryption
+			 * in this case we assume that one block is one Byte*/
+			ArrayList<Integer> singleBlock = new ArrayList<Integer>();
+			singleBlock.add(plainText.get(i));
+			
+			/*CFB 8-bit -> this loop will encrypt per character*/
+			result.addAll(blockE(singleBlock));
+		}
+		return result;
+	}
+	
+
+	/*Start the decryption mode CFB*/
+	public ArrayList<Integer> startDecryptionModeCFB(ArrayList<Integer> cipherText){
+		ArrayList<Integer> result = new ArrayList<Integer>();
+		for (int i = 0 ; i < cipherText.size() ; i ++){
+			
+			/*adjust the size of block to be sent for encryption
+			 * in this case we assume that one block is one Byte*/
+			ArrayList<Integer> singleBlock = new ArrayList<Integer>();
+			singleBlock.add(cipherText.get(i));
+			
+			/*CFB 8-bit -> this loop will encrypt per character*/
+			result.addAll(blockE(singleBlock));
 		}
 		return result;
 	}
 	
 	/*To encrypt*/
-	public ArrayList<Integer> blockE(ArrayList<Integer> plainText){
-		ArrayList<Integer> chiper = new ArrayList<Integer>();
-		BitSet bitsMask = new BitSet(8); 
-		bitsMask = intToBitSet(255);
-		System.out.println("BitMask : "+bitSetToBinary(bitsMask));
-		for (int i = 0 ; i < plainText.size() ; i ++){
+	public ArrayList<Integer> blockE(ArrayList<Integer> blockPlainText){
+		/*To save the chiper text*/
+		ArrayList<Integer> cipher = new ArrayList<Integer>();
+		
+		/*Prepare the key that match the length of the block*/
+		String keyStr = key.substring(0,blockPlainText.size());
+		byte[] byteOfKey = keyStr.getBytes(StandardCharsets.UTF_8);
+		BitSet bitsetKey = BitSet.valueOf(new byte[] { byteOfKey[0] });
+		
+		for (int i = 0 ; i < blockPlainText.size() ; i ++){
+			/*Operation happens per Byte*/
 			BitSet bits = new BitSet(); 
-			bits = intToBitSet(plainText.get(i));
-			bits.xor(bitsMask);
+			bits = intToBitSet(blockPlainText.get(i));
 			
-			chiper.add(bitSetToInt(bits));
+			/*The real algorithm begins here*/
+			bits.xor(bitsetKey);
+			
+			/*After binary operation, it will be converted to integer*/
+			cipher.add(bitSetToInt(bits));
 		}
-		return chiper;
+		return cipher;
 	}
 
 	/*To decrypt*/
-	public ArrayList<Integer> blockD(ArrayList<Integer> plainText){
-		ArrayList<Integer> chiper = new ArrayList<Integer>();
-		BitSet bitsMask = new BitSet(8); 
-		bitsMask = intToBitSet(255);
-		System.out.println("BitMask : "+bitSetToBinary(bitsMask));
-		for (int i = 0 ; i < plainText.size() ; i ++){
+	public ArrayList<Integer> blockD(ArrayList<Integer> blockPlainText){
+		/*To save the chiper text*/
+		ArrayList<Integer> cipher = new ArrayList<Integer>();
+		
+		/*Prepare the key that match the length of the block*/
+		String keyStr = key.substring(0,blockPlainText.size());
+		byte[] byteOfKey = keyStr.getBytes(StandardCharsets.UTF_8);
+		BitSet bitsetKey = BitSet.valueOf(new byte[] { byteOfKey[0] });
+		
+		for (int i = 0 ; i < blockPlainText.size() ; i ++){
+			/*Operation happens per Byte*/
 			BitSet bits = new BitSet(); 
-			bits = intToBitSet(plainText.get(i));
-			bits.xor(bitsMask);
+			bits = intToBitSet(blockPlainText.get(i));
 			
-			chiper.add(bitSetToInt(bits));
+			/*The real algorithm begins here*/
+			bits.xor(bitsetKey);
+			
+			/*After binary operation, it will be converted to integer*/
+			cipher.add(bitSetToInt(bits));
 		}
-		return chiper;
+		return cipher;
 	}
 
 	/*This function will convert String to Hexadecimal */
