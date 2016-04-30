@@ -34,7 +34,7 @@ public class commonOperation {
 	}
 	
 	
-	public static ArrayList<Integer> shiftLeft(ArrayList<Integer> input){
+	public static ArrayList<Integer> shiftLeftPerByte(ArrayList<Integer> input){
 		String padding = "00000000";
 
 		ArrayList<Integer>  result = new ArrayList<Integer>() ;
@@ -57,7 +57,7 @@ public class commonOperation {
 		return result;
 	}
 	
-	public static ArrayList<Integer> shiftRight(ArrayList<Integer> input){
+	public static ArrayList<Integer> shiftRightPerByte(ArrayList<Integer> input){
 		String padding = "00000000";
 
 		ArrayList<Integer>  result = new ArrayList<Integer>() ;

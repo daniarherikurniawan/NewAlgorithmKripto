@@ -28,7 +28,7 @@ public class modeCFB {
 	ArrayList<Integer> resultText;
 	
 	/*Constructor of modeCFB*/
-	public modeCFB(String key){
+	public modeCFB(String key, ArrayList<Integer>  plainText){
 		/*initialization*/
 		this.key = key;
 		this.blockSize = key.length();
@@ -36,12 +36,13 @@ public class modeCFB {
 		this.cipherText = new ArrayList<Integer>();
 		this.resultText = new ArrayList<Integer>();
 		this.IV = new ArrayList<Integer>();
+		this.plainText = plainText;
 		
 		/*set Initialization Vector from sha-256 of the key*/
 		MessageDigest md;
 		try {
 			md = MessageDigest.getInstance("SHA-256");
-			md.update(key.getBytes("UTF-8"));
+			md.update(plainText.toString().getBytes("UTF-8"));
 			byte[] bytesIV = md.digest();
 			for (int i = 0; i < bytesIV.length; i++) {
 				BitSet bitsetKey = BitSet.valueOf(new byte[] { bytesIV[i] });
