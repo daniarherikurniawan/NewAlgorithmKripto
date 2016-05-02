@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class modeECB {
-	int  blockSize = 16; /*Bytes*/
-	final int  iterate = 3;
-	
+	final int  blockSize = 16; /*Bytes*/
+	final int  iterate = 1;
+		
 	/*Key with minimum 8 Byte length or 8 characters*
 	 * 1 character = 8 bit = 1 Byte*/	
 	String key;
@@ -22,7 +22,7 @@ public class modeECB {
 	public modeECB(String key){
 		/*initialization*/
 		this.key = key;
-		this.blockSize = key.length();
+//		this.blockSize = key.length();
 		this.plainText = new ArrayList<Integer>();
 		this.cipherText = new ArrayList<Integer>();
 		this.resultText = new ArrayList<Integer>();
@@ -30,99 +30,59 @@ public class modeECB {
 	
 
 	
-	public ArrayList<Integer> encrypt(String key, ArrayList<Integer>  plainText){
+	public ArrayList<Integer> encrypt(String subKey, ArrayList<Integer>  plainText){
 		ArrayList<Integer> result = new ArrayList<Integer>();
 		int i = 0;
-		for (i = 0 ; i < plainText.size()-blockSize ; i += blockSize){
-			
-			/*adjust the size of block to be sent for encryption
-			 * in this case we assume that one block is one Byte*/
+		for (i = 0 ; i < plainText.size(); i += blockSize){
 			ArrayList<Integer> singleBlock = new ArrayList<Integer>();
 			
 			/*one single block = 8 Bytes*/
 			for (int j = 0; j < blockSize; j++) {
 				singleBlock.add(plainText.get(i+j));
 			}
-//			System.out.println(key);
-			singleBlock = newAlgorithm.blockE(key, singleBlock);
-			singleBlock = commonOperation.shiftLeft(singleBlock);
+			
+			singleBlock = newAlgorithm.blockE(subKey, singleBlock);
 			/*shift left*/
 			result.addAll(singleBlock);	
 		}
-
-		/*The remaining byte + padding NUL*/
-		if(i <  plainText.size()){
-
-			ArrayList<Integer> singleBlock= new ArrayList<Integer>();
-			for (int j = i; j - i <= blockSize - 1; j++) {
-				if (j < plainText.size() )
-					singleBlock.add(plainText.get(j));
-				else
-					singleBlock.add(0);
-			}
-			
-			/*Encription per block*/
-			singleBlock = newAlgorithm.blockE(key, singleBlock);
-			singleBlock = commonOperation.shiftLeft(singleBlock);
-			result.addAll(singleBlock);		
-		}
 		return result;
 	}
 
-	public ArrayList<Integer> decrypt(String key, ArrayList<Integer>  cipherText){
+	public ArrayList<Integer> decrypt(String subKey, ArrayList<Integer>  cipherText){
 		ArrayList<Integer> result = new ArrayList<Integer>();
-		
 		int i = 0;
-		for (i = 0 ; i < cipherText.size()-blockSize ; i += blockSize){
-
+		System.out.println("dcsi  "+cipherText.size());
+		for (i = 0 ; i < cipherText.size() ; i += blockSize){
 			ArrayList<Integer> singleBlock = new ArrayList<Integer>();
 			/*one single block = 8 Bytes*/
+			System.out.println("i  "+cipherText.size());
 			for (int j = 0; j < blockSize; j++) {
 				singleBlock.add(cipherText.get(i+j));
 			}
-
-			/*shift right*/
-			singleBlock = (commonOperation.shiftRight(singleBlock));	
-
-			/*ECB 8-bit -> this part will decrypt per character*/
-			result.addAll(newAlgorithm.blockD(key, singleBlock));			
-		}
-
-		/*The remaining 1 byte + padding NUL*/
-		if(i <  cipherText.size()){
-
-			ArrayList<Integer> singleBlock= new ArrayList<Integer>();
-			for (int j = i; j < cipherText.size(); j++) {
-				singleBlock.add(cipherText.get(j));
-			}	
-			singleBlock = (commonOperation.shiftRight(singleBlock));
 			
-			/*Decryption per block*/
-			singleBlock = newAlgorithm.blockD(key, singleBlock);
-			
-			/*remove Padding*/
-			boolean findEndOfPadding = false;
-			for (int j = singleBlock.size() - 1 ; j >= 0 ; j--) {
-				if(!findEndOfPadding && singleBlock.get(j) == 0){
-					singleBlock.remove(j);
-				}else{
-					findEndOfPadding = true;
-				}
-			}
-			result.addAll(singleBlock);	
+			singleBlock = newAlgorithm.blockD(subKey, singleBlock);
+
+			result.addAll(singleBlock);			
 		}
+		
 		return result;
 	}
 	
 	
-	/*Start the encryption mode CFB*/
+	/*Start the encryption mode ECB*/
 	public ArrayList<Integer> startEncryptionModeECB(ArrayList<Integer> plainText){
+		System.out.println(plainText.toString());
+		plainText = adjustSizeOfPlaintext(plainText);
+		System.out.println(plainText.toString());
+		
 		ArrayList<Integer> result = new ArrayList<Integer>();
 		result = (ArrayList<Integer>) plainText.clone();
 		String subKey = "";
 		for (int i = 0; i < iterate; i++) {
+			System.out.println("\niteration "+(i+1)+" for encryption ");
 			subKey = commonOperation.getSubKey(key, i);
 			result = encrypt(subKey, result);
+			System.out.println("success "+result.size());
 		}
 		
 		Map<Integer, Integer> frequency = new HashMap<Integer, Integer>();
@@ -139,11 +99,40 @@ public class modeECB {
 		/*Iterate 3 times and generate 3 subKey*/
 		String subKey = "";
 		for (int i = 0; i < iterate; i++) {
+			System.out.println("\niteration "+(i+1)+" for decryption ");
+			System.out.println("result  "+result.size());
 			subKey = commonOperation.getSubKey(key, iterate-i-1);
+			System.out.println("success "+result.size());
 			result = decrypt(subKey, result);
+			System.out.println("success "+result.size());
 		}
+		result = removePadding(result);
 		return result;
 	}
 	
+	public ArrayList<Integer> adjustSizeOfPlaintext(ArrayList<Integer> plainText){
+		/*The remaining byte + padding NUL*/
+		int numOfPad = blockSize - plainText.size()%blockSize;
+		if (numOfPad != blockSize){
+			for (int j = 0; j < numOfPad ; j++) {
+				plainText.add(0);
+			}
+		}
+		/*Should be times of 16 as the block's size is 16*/
+		return plainText;
+	}
+	
+	public ArrayList<Integer> removePadding(ArrayList<Integer> plainText){
+		/*remove Padding*/
+		boolean findEndOfPadding = false;
+		for (int j = plainText.size() - 1 ; j >= plainText.size() - blockSize -1 && !findEndOfPadding ; j--) {
+			if(!findEndOfPadding && plainText.get(j) == 0){
+				plainText.remove(j);
+			}else{
+				findEndOfPadding = true;
+			}
+		}
+		return plainText;
+	}
 	
 }

@@ -13,25 +13,26 @@ public class App {
 	
 	public static void main(String args[]) { 
 		/*Key should be per 8 characters length, min 8 and max 32*/
-		String key = new String("daniarhe");
+		String key = new String("daniarherikurnia");
 
 		runECB(key);
 		runCBC(key);
-		runCFB(key);
+//		runCFB(key);
 		
 	} 
 	
 	public static void runCFB(String key){
-		/*Create an instance of modeCFB class*/
-		modeCFB cfb = new modeCFB(key);
 		
 		/*Mode Encryption*/
 			
 			/*Read plain text from PlainText.txt*/
-			cfb.plainText = readFile(mainPath+"PlainText.txt");
-			
+			ArrayList<Integer> plainText = readFile(mainPath+"PlainText.txt");
+//			System.out.println(cfb.plainText);
 			/*Start the CFB mode*/
+			/*Create an instance of modeCFB class*/
+			modeCFB cfb = new modeCFB(key,plainText);
 			cfb.cipherText = cfb.startEncryptionModeCFB(cfb.plainText);
+//			System.out.println("cdc"+cfb.cipherText);
 			
 			/*Write cipher text to ChiperText.txt*/
 			writeFile(cfb.cipherText, mainPath+"ChiperTextCFB.txt");
@@ -40,18 +41,20 @@ public class App {
 			
 			/*Read cipher text from ChiperText.txt*/
 			cfb.cipherText = readFile(mainPath+"ChiperTextCFB.txt");
+//			System.out.println("cdc"+cfb.cipherText);
 			
 			/*Start the CFB mode*/
 			cfb.resultText = cfb.startDecryptionModeCFB(cfb.cipherText);
+//			
 			
 			/*Write result text to ResultText.txt*/
 			writeFile(cfb.resultText, mainPath+"ResultTextCFB.txt");
 			
-		System.out.println("CFB Success");
+		System.out.println("CFB Success ");
 	}
 	
 	public static void runECB(String key){
-		/*Create an instance of modeCFB class*/
+		/*Create an instance of modeECB class*/
 		modeECB ecb = new modeECB(key);
 		
 		/*Mode Encryption*/
