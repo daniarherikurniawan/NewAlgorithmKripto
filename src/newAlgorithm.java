@@ -13,22 +13,22 @@ public class newAlgorithm {
 	/*To encrypt*/
 	public static ArrayList<Integer> blockE(String key, ArrayList<Integer> blockPlainText){
 //		/*To save the cipher text*/
-//		blockPlainText = commonOperation.shiftLeftPerByte(blockPlainText);
+		blockPlainText = commonOperation.shiftLeftPerByte(blockPlainText);
 //		blockPlainText = feistelEnc(key, blockPlainText);
-		System.out.println("a "+blockPlainText.toString());
-		blockPlainText = sBoxEnc4to6(key, blockPlainText);
-
-		System.out.println("b "+blockPlainText.toString());
+//		System.out.println("a "+blockPlainText.toString());
+//		blockPlainText = sBoxEnc4to6(key, blockPlainText);
+//
+//		System.out.println("b "+blockPlainText.toString());
 //		blockPlainText = shiftRowOddPerBlock(blockPlainText);
-		blockPlainText = mixColumnEncPerBlock( blockPlainText);
-		System.out.println("c "+blockPlainText.toString());
+//		blockPlainText = mixColumnEncPerBlock( blockPlainText);
+//		System.out.println("c "+blockPlainText.toString());
 ////		blockPlainText = shiftRowEvenPerBlock( blockPlainText);
 ////		System.out.println("c "+blockPlainText.toString());
 //		
-		blockPlainText = sBoxEnc6to4(key, blockPlainText);
-		System.out.println("d "+blockPlainText.toString());
+//		blockPlainText = sBoxEnc6to4(key, blockPlainText);
+//		System.out.println("d "+blockPlainText.toString());
 //		System.out.println(blockPlainText.toString());
-//		blockPlainText = feistelEnc(key, blockPlainText);
+		blockPlainText = feistelEnc(key, blockPlainText);
 //		blockPlainText = commonOperation.shiftLeftPerByte(blockPlainText);
 //		
 		return blockPlainText;
@@ -39,18 +39,18 @@ public class newAlgorithm {
 		/*To save the cipher text*/
 //		blockPlainText = commonOperation.shiftRightPerByte(blockPlainText);
 //		blockPlainText = feistelDec(key, blockPlainText);
-		System.out.println("a "+blockPlainText.toString());
-		blockPlainText = sBoxEnc4to6(key, blockPlainText);
-
-		System.out.println("b "+blockPlainText.toString());
+//		System.out.println("a "+blockPlainText.toString());
+//		blockPlainText = sBoxEnc4to6(key, blockPlainText);
+//
+//		System.out.println("b "+blockPlainText.toString());
 //		blockPlainText = shiftRowEvenPerBlock( blockPlainText);
-		blockPlainText = mixColumnDecPerBlock( blockPlainText);
+//		blockPlainText = mixColumnDecPerBlock( blockPlainText);
 //		blockPlainText = shiftRowOddPerBlock(blockPlainText);
-
-		System.out.println("c "+blockPlainText.toString());
-		blockPlainText = sBoxEnc6to4(key, blockPlainText);
-//		blockPlainText = feistelDec(key, blockPlainText);
-//		blockPlainText = commonOperation.shiftRightPerByte(blockPlainText);
+//
+//		System.out.println("c "+blockPlainText.toString());
+//		blockPlainText = sBoxEnc6to4(key, blockPlainText);
+		blockPlainText = feistelDec(key, blockPlainText);
+		blockPlainText = commonOperation.shiftRightPerByte(blockPlainText);
 //		
 		return blockPlainText;
 	}
